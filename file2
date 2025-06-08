@@ -1,0 +1,52 @@
+pipeline {
+    agent any
+
+    environment {
+        SONARQUBE_SERVER = 'SonarQube'
+        DOCKER_IMAGE = 'yourdockerhub/devops-demo'
+    }
+
+    tools {
+        maven 'Maven 3.8.8'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/youruser/devops-java-app.git'
+            }
+        }
+
+        stage('Code Analysis - SonarQube') {
+            steps {
+                withSonarQubeEnv('SonarQube') {
+                    sh 'mvn clean verify sonar:sonar'
+                }
+            }
+        }
+
+        stage('Build Artifact') {
+            steps {
+                sh 'mvn package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${DOCKER_IMAGE}")
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('', 'dockerhub-creds') {
+                        docker.image("${DOCKER_IMAGE}").push("latest")
+                    }
+                }
+            }
+        }
+    }
+}

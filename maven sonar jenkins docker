@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SONARQUBE_SERVER = 'SonarQube'
-        DOCKER_IMAGE = 'yourdockerhub/devops-demo'
+        DOCKER_IMAGE = "yourdockerhub/devops-java-project"
     }
 
     tools {
@@ -13,11 +12,11 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/youruser/devops-java-app.git'
+                git 'https://github.com/yourusername/devops-java-project.git'
             }
         }
 
-        stage('Code Analysis - SonarQube') {
+        stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh 'mvn clean verify sonar:sonar'
@@ -25,7 +24,7 @@ pipeline {
             }
         }
 
-        stage('Build Artifact') {
+        stage('Build JAR') {
             steps {
                 sh 'mvn package -DskipTests'
             }
